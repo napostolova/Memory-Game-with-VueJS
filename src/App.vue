@@ -6,7 +6,8 @@
         <h1>{{ counter }} s.</h1>
       </div>
       <div class="buttons">
-        <button class="btn" @click="onStartGame">Start new game</button>
+        <button class="btn" @click="onStartGame" :disabled="isGameStarted">Start new game</button>
+        <button class="btn" @click="onResetGame" :disabled="!isGameStarted">Reset game</button>
       </div>
       <div class="result" v-if="isGameOver">
         <p v-if="areAllFound" class="win">YOU ARE WINNER!</p>
@@ -93,7 +94,7 @@ export default {
         const firstCard = this.shuffledCards[firstIndex];
         const secondCard = this.shuffledCards[secondIndex];
 
-        if (firstCard.name === secondCard.name) {
+        if (firstCard.name === secondCard.name && firstIndex !== secondIndex) {
           firstCard.matched = true;
           secondCard.matched = true;
           this.foundPairs += 1;
@@ -108,11 +109,13 @@ export default {
     },
     counter(newValue) {
       if (newValue === 0) {
-    this.handleFinishedGame();
+        this.clearTimer();
+        this.handleGameEnd();
+   
       }
     },
     areAllFound(newValue, oldValue) {
-      if (newValue !== oldValue ) {
+      if (newValue !== oldValue && newValue) {
         this.handleFinishedGame();
       }
     },
@@ -120,7 +123,7 @@ export default {
   computed: {
     areAllFound() {   
       console.log(this.foundPairs);   
-      return this.cards.length == this.foundPairs;
+      return this.cards.length === this.foundPairs;
     },
   },
 
@@ -154,7 +157,7 @@ export default {
     },
     onStartGame() {
       this.isGameStarted = true;
-      this.isGameOver = false;
+      this.resetState();      
       this.generateShuffledCards();
       this.startCounter();
     },
@@ -167,6 +170,19 @@ export default {
       if(!this.areAllFound) {
         this.shuffledCards.forEach((card) => (card.matched = true));
       }
+    },
+    resetState() {
+      this.counter = timeSeconds;
+      this.foundPairs = 0;
+      this.shuffledCards = [];
+      this.isGameOver = false;
+
+    },
+    onResetGame () {
+      this.clearTimer();
+      this.resetState();
+      this.isGameStarted = false;
+
     },
     handleFinishedGame() {
       this.clearTimer();
