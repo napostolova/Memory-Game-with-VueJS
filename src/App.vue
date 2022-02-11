@@ -1,40 +1,31 @@
 <template>
   <div id="app">
     <h1 class="title">Memory Game</h1>
-    <div class="game">
-      <div class="counter">
-        <h1>{{ counter }} s.</h1>
-      </div>
-      <div class="buttons">
-        <button class="btn" @click="onStartGame" :disabled="isGameStarted">Start new game</button>
-        <button class="btn" @click="onResetGame" :disabled="!isGameStarted">Reset game</button>
-      </div>
-      <div class="result" v-if="isGameOver">
-        <p v-if="areAllFound" class="win">YOU ARE WINNER!</p>
-        <p v-else class="fail">YOU LOST THE GAME!</p>
-      </div>
-      <section class="memory-game">
-        <div
-          v-for="(card, index) in shuffledCards"
-          :key="index"
-          class="memory-card"
-          :class="{ flip: card.visible, disabled: card.matched }"
-          :data-framework="card.name"
-          @click="showCard(card, index)"
-        >
-          <img class="front-face" :src="card.image" :alt="card.name" />
-          <img
-            class="back-face"
-            src="./assets/img/js-badge.svg"
-            alt="JS Badge"
-          />
-        </div>
-      </section>
-    </div>
+    <Buttons
+      :isGameStarted="isGameStarted"
+      :counter="counter"
+      @onStartGame="onStartGame"
+      @onResetGame="onResetGame"
+    />
+
+    <Message :areAllFound="areAllFound" :isGameOver="isGameOver"/>
+    s
+    <ul class="memory-game">
+      <Card
+        v-for="(card, index) in shuffledCards"
+        :key="index"
+        :card="card"
+        :index="index"
+        @showCard="showCard"
+      />
+    </ul>
   </div>
 </template>
-
 <script>
+import Buttons from "./components/Buttons.vue";
+import Message from "./components/Message.vue";
+import Card from "./components/Card.vue";
+
 let timeSeconds = 60;
 let interval;
 export default {
@@ -87,6 +78,11 @@ export default {
       ],
     };
   },
+  components: {
+    Message,
+    Buttons,
+    Card,
+  },
   watch: {
     selectedCards(newValue) {
       if (newValue.length == 2) {
@@ -111,7 +107,6 @@ export default {
       if (newValue === 0) {
         this.clearTimer();
         this.handleGameEnd();
-   
       }
     },
     areAllFound(newValue, oldValue) {
@@ -121,8 +116,8 @@ export default {
     },
   },
   computed: {
-    areAllFound() {   
-      console.log(this.foundPairs);   
+    areAllFound() {
+      console.log(this.foundPairs);
       return this.cards.length === this.foundPairs;
     },
   },
@@ -150,14 +145,14 @@ export default {
       this.counter = timeSeconds;
       interval = setInterval(() => {
         this.counter -= 1;
-        if(this.counter==0) {
-          this.counter=0;
+        if (this.counter == 0) {
+          this.counter = 0;
         }
       }, 1000);
     },
     onStartGame() {
       this.isGameStarted = true;
-      this.resetState();      
+      this.resetState();
       this.generateShuffledCards();
       this.startCounter();
     },
@@ -167,7 +162,7 @@ export default {
     handleGameEnd() {
       this.isGameOver = true;
       this.isGameStarted = false;
-      if(!this.areAllFound) {
+      if (!this.areAllFound) {
         this.shuffledCards.forEach((card) => (card.matched = true));
       }
     },
@@ -176,18 +171,16 @@ export default {
       this.foundPairs = 0;
       this.shuffledCards = [];
       this.isGameOver = false;
-
     },
-    onResetGame () {
+    onResetGame() {
       this.clearTimer();
       this.resetState();
       this.isGameStarted = false;
-
     },
     handleFinishedGame() {
       this.clearTimer();
       this.handleGameEnd();
-    }
+    },
   },
 };
 </script>
@@ -220,7 +213,7 @@ body {
   padding: 10px;
   border-radius: 10px;
 }
-.result{
+.result {
   width: 600px;
   margin: 30px auto;
   padding: 10px;
